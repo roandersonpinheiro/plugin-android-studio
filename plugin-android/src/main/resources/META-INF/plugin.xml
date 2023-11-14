@@ -19,10 +19,8 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
 
-    <actions>
-        <action id="com.example.pluginandroid.HelloWorldAction" class="com.example.pluginandroid.HelloWorldAction"
-                text="Hello" description="Hello">
-            <add-to-group group-id="NewGroup" anchor="first"/>
-        </action>
-    </actions>
+    <extensions defaultExtensionNs="com.intellij">
+        <statusBarWidgetProvider implementation="com.example.pluginandroid.GitInfoStatusBar"/>
+    </extensions>
+
 </idea-plugin>
