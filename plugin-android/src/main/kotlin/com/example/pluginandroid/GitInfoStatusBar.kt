@@ -1,11 +1,13 @@
 package com.example.pluginandroid
 
+
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.*
 import com.intellij.openapi.wm.StatusBar
 import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.openapi.wm.StatusBarWidgetProvider
 import com.intellij.openapi.wm.WindowManager
+import com.intellij.openapi.ui.Messages
 import com.intellij.ui.JBColor
 import com.intellij.util.Consumer
 import java.awt.event.MouseEvent
@@ -14,7 +16,7 @@ import javax.swing.JPanel
 
 class GitInfoStatusBar : StatusBarWidgetProvider {
     override fun getWidget(project: Project): StatusBarWidget {
-        return object : StatusBarWidget, StatusBarWidget.Multiframe {
+        return object : StatusBarWidget, StatusBarWidget.Multiframe, StatusBarWidget.TextPresentation {
             private val myPanel = JPanel()
             private val gitInfoLabel = JLabel()
 
@@ -62,19 +64,15 @@ class GitInfoStatusBar : StatusBarWidgetProvider {
                         val afterRevision = change.afterRevision
 
                         if (beforeRevision == null) {
-                            // Adicionado
                             addedFiles.add(afterRevision?.file?.name ?: "")
                             linesAdded += afterRevision?.content?.lines()?.size ?: 0
                         } else if (afterRevision == null) {
-                            // Removido
                             removedFiles.add(beforeRevision.file.name)
                             linesRemoved += beforeRevision.content?.lines()?.size ?: 0
                         } else {
-                            // Alterado
                             changedFiles.add(afterRevision.file.name)
                             val afterLines = afterRevision.content?.lines() ?: emptyList()
                             val beforeLines = beforeRevision.content?.lines() ?: emptyList()
-
 
                             linesAdded += maxOf(afterLines.size - beforeLines.size, 0)
                             linesRemoved += maxOf(beforeLines.size - afterLines.size, 0)
@@ -94,11 +92,11 @@ class GitInfoStatusBar : StatusBarWidgetProvider {
             }
 
             private fun buildChangesText(
-                    addedFiles: List<String>,
-                    removedFiles: List<String>,
-                    changedFiles: Int,
-                    linesAdded: Int,
-                    linesRemoved: Int
+                addedFiles: List<String>,
+                removedFiles: List<String>,
+                changedFiles: Int,
+                linesAdded: Int,
+                linesRemoved: Int
             ): String {
                 val addedFilesText = if (addedFiles.isNotEmpty()) "${addedFiles.size} file(s) added, " else ""
                 val removedFilesText = if (removedFiles.isNotEmpty()) "${removedFiles.size} file(s) removed, " else ""
@@ -115,20 +113,51 @@ class GitInfoStatusBar : StatusBarWidgetProvider {
             override fun dispose() {
             }
 
-            override fun getPresentation(): StatusBarWidget.WidgetPresentation =
-                    object : StatusBarWidget.TextPresentation {
-                        override fun getText(): String = gitInfoLabel.text
-
-                        override fun getTooltipText(): String? = "Git Information"
-
-                        override fun getClickConsumer(): Consumer<MouseEvent>? {
-                            return null
-                        }
-
-                        override fun getAlignment(): Float = 0.0f // Ajuste o alinhamento se necessário
-                    }
+            override fun getPresentation(): StatusBarWidget.WidgetPresentation = this
 
             override fun copy(): StatusBarWidget = this
+
+            override fun getTooltipText(): String? = "Git Information"
+
+            override fun getClickConsumer(): Consumer<MouseEvent>? {
+                return Consumer { event ->
+                    val filesAndChanges = buildFilesAndChanges()
+
+                    if (filesAndChanges.isNotEmpty()) {
+                        val message = buildMessage(filesAndChanges)
+                        val dialog = CustomMessageDialog(project, "Git Changes Details", message)
+                        dialog.show()
+                    }
+                }
+            }
+            private fun buildMessage(filesAndChanges: List<String>): String {
+                return filesAndChanges.joinToString("\n")
+            }
+
+            private fun buildFilesAndChanges(): List<String> {
+                val filesAndChanges = mutableListOf<String>()
+
+                val changeListManager = ChangeListManager.getInstance(project)
+                val localChangeList = changeListManager.defaultChangeList
+
+                localChangeList?.changes?.forEach { change ->
+                    val beforeRevision = change.beforeRevision
+                    val afterRevision = change.afterRevision
+
+                    val fileName = afterRevision?.file?.name ?: beforeRevision?.file?.name ?: ""
+                    val linesAdded = afterRevision?.content?.lines()?.size ?: 0
+                    val linesRemoved = beforeRevision?.content?.lines()?.size ?: 0
+
+                    val changeInfo = "$fileName - $linesAdded insertion(s), $linesRemoved deletion(s)"
+                    filesAndChanges.add(changeInfo)
+                }
+
+                return filesAndChanges
+            }
+
+            override fun getText(): String = gitInfoLabel.text
+
+            override fun getAlignment(): Float = 0.0f
         }
     }
 }
