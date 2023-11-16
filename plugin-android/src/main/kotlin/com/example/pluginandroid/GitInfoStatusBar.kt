@@ -91,6 +91,7 @@ class GitInfoStatusBar : StatusBarWidgetProvider {
                 }
             }
 
+
             private fun buildChangesText(
                 addedFiles: List<String>,
                 removedFiles: List<String>,
@@ -145,8 +146,8 @@ class GitInfoStatusBar : StatusBarWidgetProvider {
                     val afterRevision = change.afterRevision
 
                     val fileName = afterRevision?.file?.name ?: beforeRevision?.file?.name ?: ""
-                    val linesAdded = afterRevision?.content?.lines()?.size ?: 0
-                    val linesRemoved = beforeRevision?.content?.lines()?.size ?: 0
+                    val linesAdded = countAddedLines(beforeRevision, afterRevision)
+                    val linesRemoved = countRemovedLines(beforeRevision, afterRevision)
 
                     val changeInfo = "$fileName - $linesAdded insertion(s), $linesRemoved deletion(s)"
                     filesAndChanges.add(changeInfo)
@@ -154,6 +155,29 @@ class GitInfoStatusBar : StatusBarWidgetProvider {
 
                 return filesAndChanges
             }
+
+            // Função auxiliar para contar linhas adicionadas de forma precisa
+            private fun countAddedLines(beforeRevision: ContentRevision?, afterRevision: ContentRevision?): Int {
+                val beforeContent = beforeRevision?.content
+                val afterContent = afterRevision?.content
+
+                val beforeLines = beforeContent?.lines() ?: emptyList()
+                val afterLines = afterContent?.lines() ?: emptyList()
+
+                return maxOf(afterLines.size - beforeLines.size, 0)
+            }
+
+            // Função auxiliar para contar linhas removidas de forma precisa
+            private fun countRemovedLines(beforeRevision: ContentRevision?, afterRevision: ContentRevision?): Int {
+                val beforeContent = beforeRevision?.content
+                val afterContent = afterRevision?.content
+
+                val beforeLines = beforeContent?.lines() ?: emptyList()
+                val afterLines = afterContent?.lines() ?: emptyList()
+
+                return maxOf(beforeLines.size - afterLines.size, 0)
+            }
+
 
             override fun getText(): String = gitInfoLabel.text
 
