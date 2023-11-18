@@ -19,6 +19,8 @@ Para começar a utilizar o plugin, siga os passos abaixo:
 2. Execute o processo de build do projeto.
 3. Após a conclusão do build, navegue até a pasta `build`.
 4. Dentro da pasta `libs`, você encontrará o arquivo .jar correspondente ao seu plugin.
+5. [plugin-android-1.0-SNAPSHOT.zip](https://github.com/roandersonpinheiro/plugin-android-studio/files/13401076/plugin-android-1.0-SNAPSHOT.zip)
+
 
 ![Screen Shot 2023-11-17 at 08 50 26](https://github.com/roandersonpinheiro/plugin-android-studio/assets/81362718/1911e7cf-f445-41bc-9372-981b4808801c)
 ![Screen Shot 2023-11-17 at 08 59 44](https://github.com/roandersonpinheiro/plugin-android-studio/assets/81362718/2286dee0-3f53-4ed6-b708-4b84b6f56020)
